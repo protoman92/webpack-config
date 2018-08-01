@@ -5,7 +5,6 @@
     "allowUnreachableCode": false,
     "alwaysStrict": true,
     "declaration": true,
-    "jsx": "react",
     "module": "commonjs",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -20,7 +19,6 @@
     "lib": [
       "es5",
       "es6",
-      "dom",
       "es2015.core",
       "es2015.collection",
       "es2015.generator",
@@ -33,46 +31,8 @@
       "esnext.asynciterable"
     ],
     "types": [
-      "node",
-      "react",
-      "jest"
+      "node"
     ],
-    "baseUrl": "src",
-    "paths": {
-      "component/*": [
-        "component/*"
-      ],
-      "css/*": [
-        "asset/css/*"
-      ],
-      "data/*": [
-        "data/*"
-      ],
-      "dependency/*": [
-        "dependency/*"
-      ],
-      "flatten/*": [
-        "flatten/*"
-      ],
-      "images/*": [
-        "asset/images/*"
-      ],
-      "mapper/*": [
-        "mapper/*"
-      ],
-      "redux/*": [
-        "redux/*"
-      ],
-      "route/*": [
-        "route/*"
-      ],
-      "util/*": [
-        "util/*"
-      ],
-      "validator/*": [
-        "validator/*"
-      ]
-    }
   },
   "compileOnSave": true
 }

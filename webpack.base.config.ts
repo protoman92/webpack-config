@@ -1,6 +1,6 @@
 import * as DotEnv from 'dotenv-webpack';
 import * as HtmlWebpackPlugin from 'html-webpack-plugin';
-import { Objects } from 'javascriptutilities';
+import { JSObject, Objects } from 'javascriptutilities';
 import * as MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import * as path from 'path';
 import * as UglifyJS from 'uglifyjs-webpack-plugin';
@@ -13,7 +13,7 @@ type ExtraConfig = Pick<Config, 'entry'> & {
    * For e.g., ['component', 'dependency'] will be converted to src/component
    * and src/dependency.
    */
-  readonly rootLevelAliasPaths: string[];
+  readonly rootLevelAliasPaths: JSObject<string>;
   readonly publicFolder?: string;
   readonly assetFolder?: string;
 };
@@ -91,8 +91,9 @@ export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config
       ],
     },
     resolve: {
-      alias: extraConfigs.rootLevelAliasPaths
-        .map(v => ({ [v]: srcPath(v) }))
+      alias: Objects.entries(extraConfigs.rootLevelAliasPaths)
+        .filter(([_key, value]) => value !== undefined && value !== null)
+        .map(([key, value]) => ({ [key]: srcPath(value!) }))
         .reduce((acc, v) => Object.assign(acc, v), {}),
       extensions: ['.ts', '.tsx', '.js', '.json'],
     },

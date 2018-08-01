@@ -6,20 +6,22 @@ import * as path from 'path';
 import * as UglifyJS from 'uglifyjs-webpack-plugin';
 import * as webpack from 'webpack';
 import { Configuration as Config } from 'webpack';
-type Env = 'dev' | 'prod';
+export type Env = 'dev' | 'prod';
 type ExtraConfig = Pick<Config, 'entry'> & {
   /**
    * Specify root-level folder paths that will be added to alias resolution.
-   * For e.g., ['component', 'dependency'] will be converted to src/component
+   * For e.g., 'component', 'dependency' will be converted to src/component
    * and src/dependency.
    */
   readonly rootLevelAliasPaths: JSObject<string>;
+  readonly dirName: string;
+  readonly entryPathFn: (env: Env, dirName: string) => string;
   readonly publicFolder?: string;
   readonly assetFolder?: string;
 };
 
-function srcPath(subdir: string): string {
-  return path.join(__dirname, 'src', subdir);
+function srcPath(dirName: string, subdir: string): string {
+  return path.join(dirName, 'src', subdir);
 }
 
 export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config {
@@ -29,11 +31,14 @@ export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config
   return {
     ...Objects.deleteKeys(extraConfigs,
       'assetFolder',
+      'dirName',
+      'entryPathFn',
       'publicFolder',
       'rootLevelAliasPaths',
     ),
+    entry: extraConfigs.entryPathFn(env, extraConfigs.dirName),
     output: {
-      path: path.join(__dirname, `${publicFolder}`),
+      path: path.join(extraConfigs.dirName, `${publicFolder}`),
       filename: '[name].bundle.js',
       chunkFilename: '[name].bundle.js',
       publicPath: (() => env === 'prod' ? `/${publicFolder}/` : undefined)(),
@@ -93,7 +98,7 @@ export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config
     resolve: {
       alias: Objects.entries(extraConfigs.rootLevelAliasPaths)
         .filter(([_key, value]) => value !== undefined && value !== null)
-        .map(([key, value]) => ({ [key]: srcPath(value!) }))
+        .map(([key, value]) => ({ [key]: srcPath(extraConfigs.dirName, value!) }))
         .reduce((acc, v) => Object.assign(acc, v), {}),
       extensions: ['.ts', '.tsx', '.js', '.json'],
     },
@@ -112,7 +117,7 @@ export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config
         chunkFilename: '[id].[hash].css'
       }),
       new HtmlWebpackPlugin({
-        template: './src/index.html',
+        template: `${extraConfigs.dirName}/src/index.html`,
         filename: 'index.html',
         inject: 'body',
       }),

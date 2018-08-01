@@ -1,0 +1,42 @@
+{
+  "name": "webpack-config",
+  "version": "1.0.0",
+  "description": "Commonly used webpack configurations.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/protoman92/webpack-config.git"
+  },
+  "keywords": [
+    "webpack"
+  ],
+  "author": "Hai Pham",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/protoman92/webpack-config/issues"
+  },
+  "homepage": "https://github.com/protoman92/webpack-config#readme",
+  "devDependencies": {
+    "@types/dotenv-webpack": "^1.5.0",
+    "@types/html-webpack-plugin": "^3.2.0",
+    "@types/mini-css-extract-plugin": "^0.2.0",
+    "@types/uglifyjs-webpack-plugin": "^1.1.0",
+    "@types/webpack": "^4.4.8",
+    "awesome-typescript-loader": "^5.2.0",
+    "dotenv-webpack": "^1.5.7",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "json-loader": "^0.5.7",
+    "mini-css-extract-plugin": "^0.4.1",
+    "source-map-loader": "^0.2.3",
+    "typescript": "^3.0.1",
+    "uglifyjs-webpack-plugin": "^1.2.7",
+    "webpack": "^4.16.3"
+  },
+  "dependencies": {
+    "javascriptutilities": "^1.5.8"
+  }
+}

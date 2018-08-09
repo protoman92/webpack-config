@@ -16,8 +16,7 @@ type ExtraConfig = Pick<Config, 'entry'> & {
   readonly rootLevelAliasPaths: JSObject<string>;
   readonly dirName: string;
   readonly entryPathFn: (env: Env, dirName: string) => string;
-  readonly publicFolder?: string;
-  readonly assetFolder?: string;
+  readonly publicPath?: string;
 };
 
 function srcPath(dirName: string, subdir: string): string {
@@ -25,23 +24,22 @@ function srcPath(dirName: string, subdir: string): string {
 }
 
 export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config {
-  let publicFolder = extraConfigs.publicFolder || 'public';
-  let assetFolder = extraConfigs.assetFolder || 'assets';
+  let distFolder = 'dist_webpack';
+  let assetFolder = 'asset';
 
   return {
     ...Objects.deleteKeys(extraConfigs,
-      'assetFolder',
       'dirName',
       'entryPathFn',
-      'publicFolder',
+      'publicPath',
       'rootLevelAliasPaths',
     ),
     entry: extraConfigs.entryPathFn(env, extraConfigs.dirName),
     output: {
-      path: path.join(extraConfigs.dirName, `${publicFolder}`),
+      path: path.join(extraConfigs.dirName, distFolder),
       filename: '[name].bundle.js',
       chunkFilename: '[name].bundle.js',
-      publicPath: (() => env === 'prod' ? `/${publicFolder}/` : undefined)(),
+      publicPath: extraConfigs.publicPath,
     },
     optimization: {
       runtimeChunk: 'single',
@@ -84,7 +82,7 @@ export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config
               options: {
                 name: path.join(
                   '/',
-                  publicFolder,
+                  distFolder,
                   assetFolder,
                   'images',
                   '[name]_[hash:7].[ext]',

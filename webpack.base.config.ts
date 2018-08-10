@@ -5,7 +5,7 @@ import * as MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import * as path from 'path';
 import * as UglifyJS from 'uglifyjs-webpack-plugin';
 import * as webpack from 'webpack';
-import { Configuration as Config } from 'webpack';
+import { Configuration as Config, HotModuleReplacementPlugin, Loader } from 'webpack';
 export type Env = 'dev' | 'prod';
 type ExtraConfig = Pick<Config, 'entry'> & {
   /**
@@ -34,7 +34,16 @@ export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config
       'publicPath',
       'rootLevelAliasPaths',
     ),
-    entry: extraConfigs.entryPathFn(env, extraConfigs.dirName),
+    entry: [
+      ...((): string[] => {
+        if (env === 'dev') {
+          return ['webpack-hot-middleware/client'];
+        } else {
+          return [];
+        }
+      })(),
+      extraConfigs.entryPathFn(env, extraConfigs.dirName),
+    ],
     output: {
       path: path.join(extraConfigs.dirName, distFolder),
       filename: '[name].bundle.js',
@@ -42,16 +51,14 @@ export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config
       publicPath: extraConfigs.publicPath,
     },
     optimization: {
-      runtimeChunk: 'single',
       splitChunks: {
         cacheGroups: {
-          vendors: {
+          commons: {
             test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            enforce: true,
-            chunks: 'all',
-          },
-        },
+            name: 'vendor',
+            chunks: 'all'
+          }
+        }
       },
     },
     devtool: env === 'prod' ? undefined : 'source-map',
@@ -72,7 +79,17 @@ export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config
         { test: /\.json$/, loader: 'json-loader' },
         {
           test: /\.s?css?$/,
-          use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
+          use: [
+            ((): Loader => {
+              if (env === 'prod') {
+                return MiniCssExtractPlugin.loader;
+              } else {
+                return 'style-loader';
+              }
+            })(),
+            'css-loader',
+            'sass-loader',
+          ],
         },
         {
           test: /.*\.(gif|png|jpe?g)$/i,
@@ -110,6 +127,7 @@ export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config
     plugins: [
       ...(() => (env === 'dev') ? [new DotEnv()] : [])(),
       ...(() => (env === 'prod') ? [new UglifyJS()] : [])(),
+      ...(() => (env === 'dev') ? [new HotModuleReplacementPlugin()] : [])(),
       new MiniCssExtractPlugin({
         filename: '[name].[hash].css',
         chunkFilename: '[id].[hash].css'

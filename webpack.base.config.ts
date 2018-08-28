@@ -1,11 +1,15 @@
 import * as DotEnv from 'dotenv-webpack';
 import * as HtmlWebpackPlugin from 'html-webpack-plugin';
-import { JSObject, Objects } from 'javascriptutilities';
+import {JSObject, Objects} from 'javascriptutilities';
 import * as MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import * as path from 'path';
 import * as UglifyJS from 'uglifyjs-webpack-plugin';
 import * as webpack from 'webpack';
-import { Configuration as Config, HotModuleReplacementPlugin, Loader } from 'webpack';
+import {
+  Configuration as Config,
+  HotModuleReplacementPlugin,
+  Loader,
+} from 'webpack';
 export type Env = 'dev' | 'prod';
 type ExtraConfig = Pick<Config, 'entry'> & {
   /**
@@ -23,16 +27,20 @@ function srcPath(dirName: string, subdir: string): string {
   return path.join(dirName, 'src', subdir);
 }
 
-export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config {
+export default function buildConfig(
+  env: Env,
+  extraConfigs: ExtraConfig
+): Config {
   let distFolder = 'dist_webpack';
   let assetFolder = 'asset';
 
   return {
-    ...Objects.deleteKeys(extraConfigs,
+    ...Objects.deleteKeys(
+      extraConfigs,
       'dirName',
       'entryPathFn',
       'publicPath',
-      'rootLevelAliasPaths',
+      'rootLevelAliasPaths'
     ),
     entry: [
       ...((): string[] => {
@@ -56,9 +64,9 @@ export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config
           commons: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendor',
-            chunks: 'all'
-          }
-        }
+            chunks: 'all',
+          },
+        },
       },
     },
     devtool: env === 'prod' ? undefined : 'source-map',
@@ -66,17 +74,19 @@ export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config
       rules: [
         ...((): webpack.RuleSetRule[] => {
           return env === 'dev'
-            ? [{
-              enforce: 'pre',
-              test: /\.js$/,
-              loader: 'source-map-loader',
-              exclude: [/node_modules/],
-            }]
+            ? [
+                {
+                  enforce: 'pre',
+                  test: /\.js$/,
+                  loader: 'source-map-loader',
+                  exclude: [/node_modules/],
+                },
+              ]
             : [];
         })(),
-        { test: /\.tsx?$/, loader: 'awesome-typescript-loader' },
-        { test: /\.html$/, exclude: /node_modules/, loader: 'html-loader' },
-        { test: /\.json$/, loader: 'json-loader' },
+        {test: /\.tsx?$/, loader: 'awesome-typescript-loader'},
+        {test: /\.html$/, exclude: /node_modules/, loader: 'html-loader'},
+        {test: /\.json$/, loader: 'json-loader'},
         {
           test: /\.s?css?$/,
           use: [
@@ -102,7 +112,7 @@ export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config
                   distFolder,
                   assetFolder,
                   'images',
-                  '[name]_[hash:7].[ext]',
+                  '[name]_[hash:7].[ext]'
                 ),
               },
             },
@@ -113,7 +123,7 @@ export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config
     resolve: {
       alias: Objects.entries(extraConfigs.rootLevelAliasPaths)
         .filter(([_key, value]) => value !== undefined && value !== null)
-        .map(([key, value]) => ({ [key]: srcPath(extraConfigs.dirName, value!) }))
+        .map(([key, value]) => ({[key]: srcPath(extraConfigs.dirName, value!)}))
         .reduce((acc, v) => Object.assign(acc, v), {}),
       extensions: ['.ts', '.tsx', '.js', '.json'],
     },
@@ -125,12 +135,12 @@ export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config
       tls: 'empty',
     },
     plugins: [
-      ...(() => (env === 'dev') ? [new DotEnv()] : [])(),
-      ...(() => (env === 'prod') ? [new UglifyJS()] : [])(),
-      ...(() => (env === 'dev') ? [new HotModuleReplacementPlugin()] : [])(),
+      ...(() => (env === 'dev' ? [new DotEnv()] : []))(),
+      ...(() => (env === 'prod' ? [new UglifyJS()] : []))(),
+      ...(() => (env === 'dev' ? [new HotModuleReplacementPlugin()] : []))(),
       new MiniCssExtractPlugin({
         filename: '[name].[hash].css',
-        chunkFilename: '[id].[hash].css'
+        chunkFilename: '[id].[hash].css',
       }),
       new HtmlWebpackPlugin({
         template: `${extraConfigs.dirName}/src/index.html`,
@@ -138,7 +148,7 @@ export default function buildConfig(env: Env, extraConfigs: ExtraConfig): Config
         inject: 'body',
       }),
       new webpack.DefinePlugin({
-        __DEV__: JSON.stringify(JSON.parse(process.env.DEBUG || 'false'))
+        __DEV__: JSON.stringify(JSON.parse(process.env.DEBUG || 'false')),
       }),
     ],
   };

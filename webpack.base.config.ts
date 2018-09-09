@@ -23,8 +23,8 @@ type ExtraConfig = Pick<Config, 'entry'> & {
   readonly publicPath?: string;
 };
 
-function srcPath(dirName: string, subdir: string): string {
-  return path.join(dirName, 'src', subdir);
+function relativePath(dirName: string, subdir: string): string {
+  return path.join(dirName, subdir);
 }
 
 export default function buildConfig(
@@ -123,7 +123,9 @@ export default function buildConfig(
     resolve: {
       alias: Objects.entries(extraConfigs.rootLevelAliasPaths)
         .filter(([_key, value]) => value !== undefined && value !== null)
-        .map(([key, value]) => ({[key]: srcPath(extraConfigs.dirName, value!)}))
+        .map(([key, value]) => ({
+          [key]: relativePath(extraConfigs.dirName, value!),
+        }))
         .reduce((acc, v) => Object.assign(acc, v), {}),
       extensions: ['.ts', '.tsx', '.js', '.json'],
     },

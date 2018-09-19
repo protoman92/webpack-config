@@ -10,18 +10,21 @@ import {
   HotModuleReplacementPlugin,
   Loader,
 } from 'webpack';
-export type Env = 'dev' | 'prod';
-type ExtraConfig = Pick<Config, 'entry'> & {
-  /**
-   * Specify root-level folder paths that will be added to alias resolution.
-   * For e.g., 'component', 'dependency' will be converted to src/component
-   * and src/dependency.
-   */
-  readonly rootLevelAliasPaths: JSObject<string>;
-  readonly dirName: string;
-  readonly entryPathFn: (env: Env, dirName: string) => string;
-  readonly publicPath?: string;
-};
+
+export type Env = 'dev' | 'staging' | 'prod';
+
+type ExtraConfig = Pick<Config, 'entry'> &
+  Readonly<{
+    /**
+     * Specify root-level folder paths that will be added to alias resolution.
+     * For e.g., 'component', 'dependency' will be converted to src/component
+     * and src/dependency.
+     */
+    rootLevelAliasPaths: JSObject<string>;
+    dirName: string;
+    entryPathFn: (env: Env, dirName: string) => string;
+    publicPath?: string;
+  }>;
 
 function relativePath(dirName: string, subdir: string): string {
   return path.join(dirName, subdir);
@@ -69,7 +72,7 @@ export default function buildConfig(
         },
       },
     },
-    devtool: env === 'prod' ? undefined : 'source-map',
+    devtool: env === 'dev' ? 'source-map' : undefined,
     module: {
       rules: [
         ...((): webpack.RuleSetRule[] => {
@@ -91,10 +94,10 @@ export default function buildConfig(
           test: /\.s?css?$/,
           use: [
             ((): Loader => {
-              if (env === 'prod') {
-                return MiniCssExtractPlugin.loader;
-              } else {
+              if (env === 'dev') {
                 return 'style-loader';
+              } else {
+                return MiniCssExtractPlugin.loader;
               }
             })(),
             'css-loader',
@@ -129,16 +132,16 @@ export default function buildConfig(
         .reduce((acc, v) => Object.assign(acc, v), {}),
       extensions: ['.ts', '.tsx', '.js', '.json'],
     },
-    mode: env === 'prod' ? 'production' : 'development',
+    mode: env === 'dev' ? 'development' : 'production',
     node: {
-      console: env === 'prod' ? false : undefined,
+      console: env === 'dev' ? undefined : false,
       fs: 'empty',
       net: 'empty',
       tls: 'empty',
     },
     plugins: [
       ...(() => (env === 'dev' ? [new DotEnv()] : []))(),
-      ...(() => (env === 'prod' ? [new UglifyJS()] : []))(),
+      ...(() => (env === 'dev' ? [] : [new UglifyJS()]))(),
       ...(() => (env === 'dev' ? [new HotModuleReplacementPlugin()] : []))(),
       new MiniCssExtractPlugin({
         filename: '[name].[hash].css',

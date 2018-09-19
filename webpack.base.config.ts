@@ -22,8 +22,8 @@ type ExtraConfig = Pick<Config, 'entry'> &
      */
     rootLevelAliasPaths: JSObject<string>;
     dirName: string;
-    entryPathFn: (env: Env, dirName: string) => string;
     publicPath?: string;
+    getEntryPaths: (env: Env, dirName: string) => string | string[];
   }>;
 
 function relativePath(dirName: string, subdir: string): string {
@@ -41,7 +41,7 @@ export default function buildConfig(
     ...Objects.deleteKeys(
       extraConfigs,
       'dirName',
-      'entryPathFn',
+      'getEntryPaths',
       'publicPath',
       'rootLevelAliasPaths'
     ),
@@ -53,7 +53,15 @@ export default function buildConfig(
           return [];
         }
       })(),
-      extraConfigs.entryPathFn(env, extraConfigs.dirName),
+      ...(() => {
+        let extraPaths = extraConfigs.getEntryPaths(env, extraConfigs.dirName);
+
+        if (extraPaths instanceof Array) {
+          return extraPaths;
+        } else {
+          return [extraPaths];
+        }
+      })(),
     ],
     output: {
       path: path.join(extraConfigs.dirName, distFolder),

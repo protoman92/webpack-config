@@ -23,7 +23,8 @@ type ExtraConfig = Pick<Config, 'entry'> &
     rootLevelAliasPaths: JSObject<string>;
     dirName: string;
     publicPath?: string;
-    getEntryPaths: (env: Env, dirName: string) => string | string[];
+    envFilePath?: string;
+    getEntryPaths: (dirName: string) => string | string[];
   }>;
 
 function relativePath(dirName: string, subdir: string): string {
@@ -41,6 +42,7 @@ export default function buildConfig(
     ...Objects.deleteKeys(
       extraConfigs,
       'dirName',
+      'envFilePath',
       'getEntryPaths',
       'publicPath',
       'rootLevelAliasPaths'
@@ -54,7 +56,7 @@ export default function buildConfig(
         }
       })(),
       ...(() => {
-        let extraPaths = extraConfigs.getEntryPaths(env, extraConfigs.dirName);
+        let extraPaths = extraConfigs.getEntryPaths(extraConfigs.dirName);
 
         if (extraPaths instanceof Array) {
           return extraPaths;
@@ -148,7 +150,7 @@ export default function buildConfig(
       tls: 'empty',
     },
     plugins: [
-      ...(() => (env === 'dev' ? [new DotEnv()] : []))(),
+      new DotEnv({path: extraConfigs.envFilePath}),
       ...(() => (env === 'dev' ? [] : [new UglifyJS()]))(),
       ...(() => (env === 'dev' ? [new HotModuleReplacementPlugin()] : []))(),
       new MiniCssExtractPlugin({

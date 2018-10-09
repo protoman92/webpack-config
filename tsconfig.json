@@ -30,9 +30,7 @@
       "es2015.symbol.wellknown",
       "esnext.asynciterable"
     ],
-    "types": [
-      "node"
-    ],
+    "types": ["node"]
   },
   "compileOnSave": true
 }
